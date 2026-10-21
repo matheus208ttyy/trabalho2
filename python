@@ -1,0 +1,117 @@
+import random
+import time
+
+class Pokemon:
+    def __init__(self, nome, tipo, hp, ataque, defesa):
+        self.nome = nome
+        self.tipo = tipo
+        self.hp_max = hp
+        self.hp = hp
+        self.ataque = ataque
+        self.defesa = defesa
+
+    def esta_vivo(self):
+        return self.hp > 0
+
+    def calcular_vantagem(self, tipo_inimigo):
+        # Tabela simples de vantagens: Fogo > Planta > Água > Fogo
+        if self.tipo == "Fogo" and tipo_inimigo == "Planta": return 2.0
+        if self.tipo == "Planta" and tipo_inimigo == "Água": return 2.0
+        if self.tipo == "Água" and tipo_inimigo == "Fogo": return 2.0
+        if self.tipo == tipo_inimigo: return 0.5
+        return 1.0
+
+    def atacar(self, inimigo):
+        print(f"\n⚔️ {self.nome} usou um ataque!")
+        time.sleep(1)
+        
+        # Lógica de dano baseada no sistema oficial simplificado
+        multiplicador = self.calcular_vantagem(inimigo.tipo)
+        fator_aleatorio = random.uniform(0.85, 1.15)
+        
+        dano_base = (self.ataque - (inimigo.defesa / 2))
+        dano = max(1, int(dano_base * multiplicador * fator_aleatorio))
+        
+        inimigo.hp = max(0, inimigo.hp - dano)
+        
+        # Mensagens de feedback de efetividade
+        if multiplicador == 2.0:
+            print("💥 Foi super efetivo!")
+        elif multiplicador == 0.5:
+            print("🛡️ Não foi muito efetivo...")
+            
+        print(f"🎯 Causou {dano} de dano em {inimigo.nome}!")
+        time.sleep(1)
+
+def exibir_status(p1, p2):
+    print("\n" + "="*30)
+    print(f"🧑‍🚀 {p1.nome} [{p1.tipo}] - HP: {p1.hp}/{p1.hp_max}")
+    print(f"🤖 {p2.nome} [{p2.tipo}] - HP: {p2.hp}/{p2.hp_max}")
+    print("="*30)
+
+def iniciar_batalha():
+    print("--- BEM-VINDO À BATALHA POKÉMON ---")
+    
+    # Criação dos Pokémon disponíveis
+    opcoes = [
+        Pokemon("Charmander", "Fogo", 100, 30, 15),
+        Pokemon("Squirtle", "Água", 100, 25, 22),
+        Pokemon("Bulbasaur", "Planta", 100, 27, 18)
+    ]
+    
+    # Escolha do jogador
+    print("\nEscolha seu Pokémon:")
+    for i, poke in enumerate(opcoes):
+        print(f"{i + 1} - {poke.nome} (Tipo: {poke.tipo})")
+        
+    escolha = int(input("Digite o número: ")) - 1
+    jogador = opcoes[escolha]
+    
+    # Oponente aleatório (Garante que seja uma instância limpa diferente do jogador)
+    opcoes_bot = [
+        Pokemon("Charmander", "Fogo", 100, 30, 15),
+        Pokemon("Squirtle", "Água", 100, 25, 22),
+        Pokemon("Bulbasaur", "Planta", 100, 27, 18)
+    ]
+    bot = random.choice([p for i, p in enumerate(opcoes_bot) if i != escolha])
+    
+    print(f"\nVocê escolheu {jogador.nome}!")
+    print(f"O oponente enviou {bot.nome}!")
+    time.sleep(1.5)
+    
+    # Loop Principal da Batalha (Turnos)
+    turno = 1
+    while jogador.esta_vivo() and bot.esta_vivo():
+        print(f"\n--- TURNO {turno} ---")
+        exibir_status(jogador, bot)
+        
+        # Turno do Jogador
+        print("\nO que deseja fazer?")
+        print("1 - Atacar")
+        print("2 - Fugir")
+        acao = input("Escolha: ")
+        
+        if acao == "2":
+            print("🏃 Você fugiu da batalha!")
+            return
+            
+        jogador.atacar(bot)
+        
+        # Verifica se o bot desmaiou antes de revidar
+        if not bot.esta_vivo():
+            break
+            
+        # Turno do Bot (Inimigo)
+        bot.atacar(jogador)
+        turno += 1
+        
+    # Fim da batalha
+    print("\n--- FIM DA BATALHA ---")
+    if jogador.esta_vivo():
+        print(f"🎉 Vitória! {bot.nome} desmaiou. {jogador.nome} venceu!")
+    else:
+        print(f"💀 Derrota! {jogador.nome} desmaiou. O oponente venceu!")
+
+# Executa o jogo
+if __name__ == "__main__":
+    iniciar_batalha()
